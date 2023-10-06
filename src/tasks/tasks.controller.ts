@@ -9,10 +9,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { Task, TaskStatus } from './task.model';
+import { Task } from './task.model';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
+import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
 @ApiTags('Tasks')
 @Controller('tasks')
 export class TasksController {
@@ -38,8 +39,11 @@ export class TasksController {
   }
 
   @Patch('/:id')
-  updateTaskById(@Param('id') id: string, @Body('status') status: TaskStatus) {
-    return this.tasksService.updateTaskById(id, status);
+  updateTaskById(
+    @Param('id') id: string,
+    @Body() statusDto: UpdateTaskStatusDto,
+  ) {
+    return this.tasksService.updateTaskById(id, statusDto);
   }
 
   @Delete('/:id')
