@@ -21,6 +21,8 @@ import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { Task } from './dto/task.entity';
 import { TaskStatus } from './task.model';
 import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from 'src/auth/get-user.decorator';
+import { User } from 'src/users/dto/user.entity';
 
 @ApiTags('Tasks')
 @Controller('tasks')
@@ -40,8 +42,11 @@ export class TasksController {
     type: Task,
   })
   @ApiBadRequestResponse({ status: 400, description: 'Invalid input' })
-  async createTask(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
-    return this.tasksService.createTask(createTaskDto);
+  async createTask(
+    @Body() createTaskDto: CreateTaskDto,
+    @GetUser() user: User,
+  ): Promise<Task> {
+    return this.tasksService.createTask(createTaskDto, user);
   }
 
   /**
@@ -56,8 +61,8 @@ export class TasksController {
     type: Task,
   })
   @ApiNotFoundResponse({ status: 404, description: 'Task not found' })
-  getTaskById(@Param('id') id: string): Promise<Task> {
-    return this.tasksService.getTaskById(id);
+  getTaskById(@Param('id') id: string, @GetUser() user: User): Promise<Task> {
+    return this.tasksService.getTaskById(id, user);
   }
 
   /**
@@ -68,8 +73,11 @@ export class TasksController {
   @Get()
   @ApiResponse({ status: 200, description: 'List of tasks.', type: [Task] })
   @ApiNotFoundResponse({ status: 404, description: 'Task not found' })
-  getTasks(@Query() filterDto: GetTasksFilterDto): Promise<Task[]> {
-    return this.tasksService.getTasks(filterDto);
+  getTasks(
+    @Query() filterDto: GetTasksFilterDto,
+    @GetUser() user: User,
+  ): Promise<Task[]> {
+    return this.tasksService.getTasks(filterDto, user);
   }
 
   /**
@@ -85,8 +93,9 @@ export class TasksController {
   @ApiNotFoundResponse({ status: 404, description: 'Task not found' })
   async deleteTaskById(
     @Param('id') id: string,
+    @GetUser() user: User,
   ): Promise<{ id: string; message: string }> {
-    return this.tasksService.deleteTaskById(id);
+    return this.tasksService.deleteTaskById(id, user);
   }
 
   /**
@@ -106,7 +115,8 @@ export class TasksController {
   updateTaskStatus(
     @Param('id') id: string,
     @Body('status') status: TaskStatus,
+    @GetUser() user: User,
   ): Promise<Task> {
-    return this.tasksService.updateTaskStatus(id, status);
+    return this.tasksService.updateTaskStatus(id, status, user);
   }
 }

@@ -1,11 +1,15 @@
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
+import {
+  AuthCredentialsDto,
+  LoginCredentialsDto,
+} from '../auth/dto/auth-credentials.dto';
 import { User } from '../users/dto/user.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -36,24 +40,27 @@ export class AuthService {
       if (error.code === '23505') {
         throw new ConflictException('Username already exists');
       }
-      console.log(error.code);
     }
   }
 
   async signIn(
-    authCredentials: AuthCredentialsDto,
+    authCredentials: LoginCredentialsDto,
   ): Promise<{ message: string; token: string }> {
     const { username, password } = authCredentials;
 
     const user = await this.userRepository.findOneBy({ username });
 
+    if (!user) {
+      throw new NotFoundException('User does not exist.');
+    }
+
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (user && validPassword) {
       const payload: JwtPayload = { username };
-      const accessToken: string = await this.jwtService.sign(payload);
+      const accessToken: string = this.jwtService.sign(payload);
       return {
-        message: 'Login Successful! \nWelcome back',
+        message: `Login Successful! Welcome back Mr./Mrs. ${username}.`,
         token: accessToken,
       };
     } else {

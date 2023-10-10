@@ -14,3 +14,9 @@ export class AuthCredentialsDto {
   @IsStrongPassword()
   password: string;
 }
+
+export class LoginCredentialsDto {
+  username: string;
+
+  password: string;
+}
